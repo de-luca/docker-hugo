@@ -1,0 +1,49 @@
+name: Updater
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+
+jobs:
+
+  update:
+    name: Update with Upstream changes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout origin
+        uses: actions/checkout@v2
+
+      - name: Setup upstream
+        run: |
+          git remote add upstream https://github.com/gohugoio/hugo.git
+          git fetch upstream
+          git config push.default simple
+
+      - name: Trigger builds
+        env:
+          PAT: ${{ secrets.PAT }}
+          GITHUB_REPOS: ${{ github.repository }}
+        run: |
+          raw_tags="$(git push origin refs/remotes/upstream/master:refs/heads/master --tags --porcelain)"
+          tags=()
+
+          while read -r line
+          do
+            tags+=("$line")
+          done <<< "$raw_tags"
+
+          regex="^\*.*:(.*)[[:space:]]+.*\[.*$"
+
+          for f in "${tags[@]}"
+          do
+            if [[ $f =~ $regex ]]
+            then
+              curl \
+                -X POST \
+                -H "Accept: application/vnd.github.v3+json" \
+                -H "Authorization: token $PAT" \
+                -d "{\"ref\":\"refs/heads/builder\",\"inputs\":{\"ref\":\"${BASH_REMATCH[1]}\"}}" \
+                https://api.github.com/repos/$GITHUB_REPOS/actions/workflows/builder.yml/dispatches
+            fi
+          done

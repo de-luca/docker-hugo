@@ -1,0 +1,52 @@
+name: Builder
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to build'
+        required: true
+
+jobs:
+
+  build:
+    name: Build ${{ github.event.inputs.ref }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout origin
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Compute docker tags
+        id: tagger
+        run: |
+          TAGS=("latest")
+          REF_REGEX="^refs/tags/*"
+          REF=${{ github.event.inputs.ref }}
+
+          if [[ $REF =~ $REF_REGEX ]]
+          then
+            TAG="${REF#refs/tags/v}"
+            TAGS+=($TAG)
+
+            for i in {1..2}; do
+              TAG="${TAG%.*}"
+              TAGS+=($TAG)
+            done
+          fi
+
+          TAGS="${TAGS[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '
+          TAGS=$(printf ",%s" "${TAGS[@]}")
+          TAGS=${TAGS:1}
+
+          echo ::set-output name=tags::$TAGS
+
+      - name: Build/Push to Docker Hub (${{ steps.tagger.outputs.tags }})
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: deluca/hugo
+          tags: ${{ steps.tagger.outputs.tags }}
