@@ -22,7 +22,7 @@ jobs:
       - name: Compute docker tags
         id: tagger
         run: |
-          TAGS=()
+          TAGS=("latest")
           REF_REGEX="^refs/tags/*"
           REF=${{ github.event.inputs.ref }}
 
@@ -31,9 +31,8 @@ jobs:
             TAG="${REF#refs/tags/v}"
             TAGS+=($TAG)
 
-            for i in {1..1}; do
+            for i in {1..2}; do
               TAG="${TAG%.*}"
-
               if [[ $TAG != "0" ]]
               then
                 TAGS+=($TAG)
