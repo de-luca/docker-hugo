@@ -44,7 +44,7 @@ jobs:
                 -X POST \
                 -H "Accept: application/vnd.github.v3+json" \
                 -H "Authorization: token $PAT" \
-                -d "{\"ref\":\"refs/heads/builder\",\"inputs\":{\"ref\":\"${BASH_REMATCH[1]}\"}}" \
+                -d "{\"ref\":\"refs/heads/builder\",\"inputs\":{\"ref\":\"${BASH_REMATCH[2]}\"}}" \
                 https://api.github.com/repos/$GITHUB_REPOS/actions/workflows/builder.yml/dispatches
             fi
           done
