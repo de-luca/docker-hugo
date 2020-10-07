@@ -34,7 +34,7 @@ jobs:
             tags+=("$line")
           done <<< "$raw_tags"
 
-          regex="^\*.*:(.*)[[:space:]]+.*\[.*$"
+          regex="^(\*|refs).*:(.*)[[:space:]]+.*(\[|\.\.).*$"
 
           for f in "${tags[@]}"
           do
