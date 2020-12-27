@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout origin
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.TOKEN_OVERRIDE }}
 
       - name: Setup upstream
         run: |
@@ -27,6 +29,7 @@ jobs:
           GITHUB_REPOS: ${{ github.repository }}
         run: |
           raw_tags="$(git push origin refs/remotes/upstream/master:refs/heads/master --tags --porcelain --force)"
+
           tags=()
 
           while read -r line
