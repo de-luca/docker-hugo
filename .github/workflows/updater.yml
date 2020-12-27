@@ -26,7 +26,7 @@ jobs:
           PAT: ${{ secrets.PAT }}
           GITHUB_REPOS: ${{ github.repository }}
         run: |
-          raw_tags="$(git push origin refs/remotes/upstream/master:refs/heads/master --tags --porcelain)"
+          raw_tags="$(git push origin refs/remotes/upstream/master:refs/heads/master --tags --porcelain --force)"
           tags=()
 
           while read -r line
